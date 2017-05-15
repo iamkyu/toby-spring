@@ -5,10 +5,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import springbook.user.domain.User;
 
+import java.sql.SQLException;
+
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
 
 /**
@@ -37,8 +41,18 @@ public class UserDaoTest {
         user.setPassword("password");
 
         dao.add(user);
+        assertThat(dao.getCount(), is(1));
 
         User user2 = dao.get(user.getId());
-        assertEquals(user.getId(), user2.getId());
+        assertThat(user.getId(), is(user2.getId()));
+    }
+
+    @Test(expected = EmptyResultDataAccessException.class)
+    public void getUserFailure() throws SQLException {
+        //given when
+        dao.get("unknown_id");
+
+        //then
+        //exception
     }
 }
