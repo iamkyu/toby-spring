@@ -15,15 +15,17 @@ import java.sql.SQLException;
  */
 public class UserDao {
     private DataSource dataSource;
+    private Connection c = null;
+    private PreparedStatement ps = null;
 
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
     public void add(User user) throws Exception {
-        Connection c = dataSource.getConnection();
+        c = dataSource.getConnection();
+        ps = c.prepareStatement("INSERT INTO USERS(id, name, password) VALUES(?,?,?)");
 
-        PreparedStatement ps = c.prepareStatement("INSERT INTO USERS(id, name, password) VALUES(?,?,?)");
         ps.setString(1, user.getId());
         ps.setString(2, user.getId());
         ps.setString(3, user.getId());
@@ -34,9 +36,8 @@ public class UserDao {
     }
 
     public User get(String userId) throws SQLException {
-        Connection c = dataSource.getConnection();
-
-        PreparedStatement ps = c.prepareStatement("SELECT * FROM USERS WHERE id = ?");
+        c = dataSource.getConnection();
+        ps = c.prepareStatement("SELECT * FROM USERS WHERE id = ?");
         ps.setString(1, userId);
 
         ResultSet rs = ps.executeQuery();
@@ -60,27 +61,69 @@ public class UserDao {
     }
 
     public int getCount() throws SQLException {
-        Connection c = dataSource.getConnection();
+        ResultSet rs = null;
+        int count = 0;
+        try {
+            c = dataSource.getConnection();
+            ps = c.prepareStatement("SELECT count(*) FROM USERS");
 
-        PreparedStatement ps = c.prepareStatement("SELECT count(*) FROM USERS");
+            rs = ps.executeQuery();
+            rs.next();
+            count = rs.getInt(1);
+        } catch (SQLException e) {
+            if (rs != null) {
+                try {
+                    rs.close();
+                } catch (SQLException e1) {
+                    e1.printStackTrace();
+                }
+            }
 
-        ResultSet rs = ps.executeQuery();
-        rs.next();
-        int count = rs.getInt(1);
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException e1) {
+                    e1.printStackTrace();
+                }
+            }
 
-        rs.close();
-        ps.close();
-        c.close();
+            if (c != null) {
+                try {
+                    c.close();
+                } catch (SQLException e1) {
+                    e1.printStackTrace();
+                }
+            }
+
+        }
 
         return count;
     }
 
     public void deleteAll() throws SQLException {
-        Connection c = dataSource.getConnection();
-        PreparedStatement ps = c.prepareCall("DELETE FROM users");
-        ps.executeUpdate();
-        ps.close();
-        c.close();
+        try {
+            c = dataSource.getConnection();
+            ps = c.prepareStatement("DELETE FROM users");
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw e;
+        } finally {
+            if (ps != null) {
+                try {
+                    ps.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            if (c != null) {
+                try {
+                    c.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 }
 
