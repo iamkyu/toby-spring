@@ -2,14 +2,11 @@ package springbook.user.dao;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 import springbook.user.domain.User;
 
+import javax.sql.DataSource;
 import java.sql.SQLException;
 
 import static org.hamcrest.Matchers.is;
@@ -19,18 +16,18 @@ import static org.junit.Assert.*;
  * @author Kj Nam
  * @since 2017-05-11
  */
-@RunWith(SpringRunner.class)
-@ContextConfiguration(locations = "classpath:applicationContext.xml")
 public class UserDaoTest {
-
-    @Autowired
-    private ApplicationContext context;
-
     private UserDao dao;
 
     @Before
-    public void setUp() {
-        this.dao = context.getBean("userDao", UserDao.class);
+    public void setUp() throws SQLException {
+        dao = new UserDao();
+        DataSource dataSource = new SingleConnectionDataSource(
+                "jdbc:h2:~/apps/h2db/crm;AUTO_SERVER=TRUE", "sa", "sa", true
+        );
+        dao.setDataSource(dataSource);
+
+        dao.deleteAll();
     }
 
     @Test
