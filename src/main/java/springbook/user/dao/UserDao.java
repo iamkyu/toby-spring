@@ -23,16 +23,8 @@ public class UserDao {
     }
 
     public void add(User user) throws Exception {
-        c = dataSource.getConnection();
-        ps = c.prepareStatement("INSERT INTO USERS(id, name, password) VALUES(?,?,?)");
-
-        ps.setString(1, user.getId());
-        ps.setString(2, user.getId());
-        ps.setString(3, user.getId());
-        ps.executeUpdate();
-
-        ps.close();
-        c.close();
+        StatementStrategy strategy = new AddStatement(user);
+        jdbcContextWithStatementStrategy(strategy);
     }
 
     public User get(String userId) throws SQLException {
@@ -101,26 +93,33 @@ public class UserDao {
     }
 
     public void deleteAll() throws SQLException {
+        StatementStrategy strategy = new DeleteAllStatement();
+        jdbcContextWithStatementStrategy(strategy);
+    }
+
+    public void jdbcContextWithStatementStrategy(StatementStrategy stmt) throws SQLException {
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+
         try {
-            c = dataSource.getConnection();
-            ps = c.prepareStatement("DELETE FROM users");
-            ps.executeUpdate();
+            connection = dataSource.getConnection();
+            preparedStatement = stmt.makePreparedStatement(connection);
+            preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw e;
         } finally {
-            if (ps != null) {
+            if (preparedStatement != null) {
                 try {
-                    ps.close();
+                    preparedStatement.close();
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    throw e;
                 }
             }
-
-            if (c != null) {
+            if (connection != null) {
                 try {
-                    c.close();
+                    connection.close();
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    throw e;
                 }
             }
         }
