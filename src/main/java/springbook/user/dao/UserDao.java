@@ -18,12 +18,18 @@ public class UserDao {
     private Connection c = null;
     private PreparedStatement ps = null;
 
+    private JdbcContext jdbcContext;
+
+    public void setJdbcContext(JdbcContext jdbcContext) {
+        this.jdbcContext = jdbcContext;
+    }
+
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
     public void add(User user) throws Exception {
-        jdbcContextWithStatementStrategy(new StatementStrategy() {
+        this.jdbcContext.workWithStatementStrategy(new StatementStrategy() {
             @Override
             public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
                 PreparedStatement ps = c.prepareStatement("INSERT INTO USERS(id, name, password) VALUES(?,?,?)");
@@ -102,40 +108,12 @@ public class UserDao {
     }
 
     public void deleteAll() throws SQLException {
-        jdbcContextWithStatementStrategy(new StatementStrategy() {
+        this.jdbcContext.workWithStatementStrategy(new StatementStrategy() {
             @Override
             public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
                 return c.prepareStatement("DELETE FROM users");
             }
         });
-    }
-
-    public void jdbcContextWithStatementStrategy(StatementStrategy stmt) throws SQLException {
-        Connection connection = null;
-        PreparedStatement preparedStatement = null;
-
-        try {
-            connection = dataSource.getConnection();
-            preparedStatement = stmt.makePreparedStatement(connection);
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            throw e;
-        } finally {
-            if (preparedStatement != null) {
-                try {
-                    preparedStatement.close();
-                } catch (SQLException e) {
-                    throw e;
-                }
-            }
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    throw e;
-                }
-            }
-        }
     }
 }
 
