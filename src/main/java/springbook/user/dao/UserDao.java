@@ -1,112 +1,54 @@
 package springbook.user.dao;
 
-import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import springbook.user.domain.User;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * @author Kj Nam
  * @since 2017-05-11
  */
 public class UserDao {
-    private DataSource dataSource;
-    private Connection c = null;
-    private PreparedStatement ps = null;
+    private JdbcTemplate jdbcTemplate;
 
-    private JdbcContext jdbcContext;
+    private RowMapper<User> userRowMapper = (rs, rowNum) -> {
+        User user = new User();
+        user.setId(rs.getString("id"));
+        user.setName(rs.getString("name"));
+        user.setPassword(rs.getString("password"));
+        return user;
+    };
 
     public void setDataSource(DataSource dataSource) {
-        this.jdbcContext = new JdbcContext();
-        this.jdbcContext.setDataSource(dataSource);
-        this.dataSource = dataSource;
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
-    public void add(User user) throws Exception {
-        this.jdbcContext.workWithStatementStrategy(new StatementStrategy() {
-            @Override
-            public PreparedStatement makePreparedStatement(Connection c) throws SQLException {
-                PreparedStatement ps = c.prepareStatement("INSERT INTO USERS(id, name, password) VALUES(?,?,?)");
-                ps.setString(1, user.getId());
-                ps.setString(2, user.getName());
-                ps.setString(3, user.getPassword());
-
-                return ps;
-            }
-        });
+    public void add(User user) {
+        this.jdbcTemplate.update("INSERT INTO USERS(id, name, password) VALUES(?,?,?)",
+                user.getId(),
+                user.getName(),
+                user.getPassword());
     }
 
     public User get(String userId) throws SQLException {
-        c = dataSource.getConnection();
-        ps = c.prepareStatement("SELECT * FROM USERS WHERE id = ?");
-        ps.setString(1, userId);
-
-        ResultSet rs = ps.executeQuery();
-        User user = null;
-        if (rs.next()) {
-            user = new User();
-            user.setId(rs.getString("id"));
-            user.setName(rs.getString("name"));
-            user.setPassword(rs.getString("password"));
-        }
-
-        rs.close();
-        ps.close();
-        c.close();
-
-        if (user == null) {
-            throw new EmptyResultDataAccessException(1);
-        }
-
-        return user;
+        return this.jdbcTemplate.queryForObject("SELECT * FROM USERS WHERE id = ?", new Object[]{userId}, this.userRowMapper);
     }
 
-    public int getCount() throws SQLException {
-        ResultSet rs = null;
-        int count = 0;
-        try {
-            c = dataSource.getConnection();
-            ps = c.prepareStatement("SELECT count(*) FROM USERS");
-
-            rs = ps.executeQuery();
-            rs.next();
-            count = rs.getInt(1);
-        } catch (SQLException e) {
-            if (rs != null) {
-                try {
-                    rs.close();
-                } catch (SQLException e1) {
-                    e1.printStackTrace();
-                }
-            }
-
-            if (ps != null) {
-                try {
-                    ps.close();
-                } catch (SQLException e1) {
-                    e1.printStackTrace();
-                }
-            }
-
-            if (c != null) {
-                try {
-                    c.close();
-                } catch (SQLException e1) {
-                    e1.printStackTrace();
-                }
-            }
-
-        }
-
-        return count;
+    public int getCount() {
+        return this.jdbcTemplate.queryForObject("SELECT count(*) FROM USERS", Integer.class);
     }
 
-    public void deleteAll() throws SQLException {
-        jdbcContext.executeSql("DELETE FROM users");
+    public void deleteAll() {
+        this.jdbcTemplate.update("DELETE FROM users");
+    }
+
+    public List<User> getAll() {
+
+        return this.jdbcTemplate.query("SELECT * FROM USERS", this.userRowMapper);
     }
 }
 
