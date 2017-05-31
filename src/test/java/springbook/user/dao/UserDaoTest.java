@@ -110,4 +110,22 @@ public class UserDaoTest {
             assertEquals(set.translate(null, null, sqlEx).getClass(), DuplicateKeyException.class);
         }
     }
+
+    @Test
+    public void update() {
+        dao.add(user1);
+        dao.add(user2);
+
+        user1.setName("updateName");
+        user1.setPassword("updatePassword");
+        user1.setLevel(Level.GOLD);
+        user1.setLogin(1000);
+        user1.setRecommend(99);
+        dao.update(user1);
+
+        User user1update = dao.get(user1.getId());
+        checkSameUser(user1, user1update);
+        User user2same = dao.get(user2.getId());
+        checkSameUser(user2, user2same);
+    }
 }
