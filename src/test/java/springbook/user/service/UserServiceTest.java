@@ -15,6 +15,8 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
+import static springbook.user.service.UserService.MIN_LOGCOUNT_FOR_SILVER;
+import static springbook.user.service.UserService.MIN_RECOMMEND_FOR_GOLD;
 
 /**
  * @author Kj Nam
@@ -33,11 +35,11 @@ public class UserServiceTest {
         userDao.deleteAll();
 
         users = Arrays.asList(
-                new User("amy", "에이미", "p1", Level.BASIC, 49, 0),
-                new User("joshlong", "조시롱", "p2", Level.BASIC, 50, 0),
-                new User("mark", "마크", "p3", Level.SILVER, 60, 29),
-                new User("miller", "밀러", "p4", Level.SILVER, 60, 30),
-                new User("lloyd", "오민규", "p5", Level.GOLD, 100, 100)
+                new User("amy", "에이미", "p1", Level.BASIC, MIN_LOGCOUNT_FOR_SILVER-1, 0),
+                new User("joshlong", "조시롱", "p2", Level.BASIC, MIN_LOGCOUNT_FOR_SILVER, 0),
+                new User("mark", "마크", "p3", Level.SILVER, 60, MIN_RECOMMEND_FOR_GOLD-1),
+                new User("miller", "밀러", "p4", Level.SILVER, 60, MIN_RECOMMEND_FOR_GOLD),
+                new User("lloyd", "오민규", "p5", Level.GOLD, 100, Integer.MAX_VALUE)
         );
     }
 
