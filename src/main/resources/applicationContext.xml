@@ -19,7 +19,10 @@
 
     <bean id="userService" class="springbook.user.service.UserService">
         <property name="userDao" ref="userDao"/>
+        <property name="userLevelUpgradePolicy" ref="userLevelUpgradePolicy"/>
     </bean>
+
+    <bean id="userLevelUpgradePolicy" class="springbook.user.domain.CommonLevelUpgradePolicy" />
 
     <jdbc:initialize-database data-source="dataSource" ignore-failures="ALL">
         <jdbc:script location="classpath:/ddl-for-mysql.sql"/>
