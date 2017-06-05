@@ -7,9 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import springbook.user.dao.UserDao;
+import springbook.user.domain.CommonLevelUpgradePolicy;
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
 
+import javax.sql.DataSource;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -26,6 +29,7 @@ import static springbook.user.service.UserService.MIN_RECOMMEND_FOR_GOLD;
 @ContextConfiguration(locations = "classpath:applicationContext.xml")
 public class UserServiceTest {
 
+    @Autowired DataSource dataSource;
     @Autowired UserService userService;
     @Autowired UserDao userDao;
     private List<User> users;
@@ -44,7 +48,23 @@ public class UserServiceTest {
     }
 
     @Test
-    public void upgradeLevels() {
+    public void add() {
+        User userWithLevel = users.get(4);
+        User userWithoutLevel = users.get(0);
+        userWithoutLevel.setLevel(null);
+
+        userService.add(userWithLevel);
+        userService.add(userWithoutLevel);
+
+        User userWithLevelRead = userDao.get(userWithLevel.getId());
+        User userWithoutLevelRead = userDao.get(userWithoutLevel.getId());
+
+        assertThat(userWithLevelRead.getLevel(), is(userWithLevel.getLevel()));
+        assertThat(userWithoutLevelRead.getLevel(), is(Level.BASIC));
+    }
+
+    @Test
+    public void upgradeLevels() throws SQLException {
         for (User user : users) {
             userDao.add(user);
         }
@@ -68,18 +88,48 @@ public class UserServiceTest {
     }
 
     @Test
-    public void add() {
-        User userWithLevel = users.get(4);
-        User userWithoutLevel = users.get(0);
-        userWithoutLevel.setLevel(null);
+    public void upgradeAllOrNothing() throws SQLException {
+        UserService testUserService = new TestUserService(users.get(3).getId());
+        testUserService.setDataSource(this.dataSource);
+        testUserService.setUserDao(this.userDao);
+        testUserService.setUserLevelUpgradePolicy(new CommonLevelUpgradePolicy());
 
-        userService.add(userWithLevel);
-        userService.add(userWithoutLevel);
+        for (User user : users) {
+            userDao.add(user);
+        }
 
-        User userWithLevelRead = userDao.get(userWithLevel.getId());
-        User userWithoutLevelRead = userDao.get(userWithoutLevel.getId());
+        try {
+            testUserService.upgradeLevels();
+            fail("TestUserServiceException expected");
+        } catch (TestUserServiceException e) {
+            e.printStackTrace();
+        }
 
-        assertThat(userWithLevelRead.getLevel(), is(userWithLevel.getLevel()));
-        assertThat(userWithoutLevelRead.getLevel(), is(Level.BASIC));
+        // 4번째 유저 업그레이드 중 예외가 발생해서, 1번째 유저의 레벨업은 취소되어야 한다
+        checkLevelUpgrade(users.get(1), false);
+    }
+
+
+    static class TestUserService extends UserService {
+        private String id;
+
+        private TestUserService(String id) {
+            this.id = id;
+        }
+
+        @Override
+        protected void upgradeLevel(User user) {
+            if (user.getId().equals(this.id)) {
+                throw new TestUserServiceException();
+            }
+            super.upgradeLevel(user);
+        }
+    }
+
+    static class TestUserServiceException extends RuntimeException {
     }
 }
+
+
+
+

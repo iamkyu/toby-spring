@@ -18,6 +18,7 @@
     </bean>
 
     <bean id="userService" class="springbook.user.service.UserService">
+        <property name="dataSource" ref="dataSource"/>
         <property name="userDao" ref="userDao"/>
         <property name="userLevelUpgradePolicy" ref="userLevelUpgradePolicy"/>
     </bean>
