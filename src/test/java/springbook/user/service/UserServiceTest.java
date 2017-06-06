@@ -36,6 +36,7 @@ public class UserServiceTest {
 
     @Autowired private UserService userService;
     @Autowired private UserDao userDao;
+    @Autowired private MailSender mailSender;
     @Autowired private PlatformTransactionManager transactionManager;
     private List<User> users;
 
@@ -107,7 +108,7 @@ public class UserServiceTest {
         UserService testUserService = new TestUserService(users.get(3).getId());
         testUserService.setUserDao(userDao);
         testUserService.setTransactionManager(transactionManager);
-        // testUserService.setMailSender(mailSender);
+        testUserService.setMailSender(mailSender);
         testUserService.setUserLevelUpgradePolicy(new CommonLevelUpgradePolicy());
 
         for (User user : users) {
