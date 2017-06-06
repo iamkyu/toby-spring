@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.MailSender;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -32,6 +33,7 @@ public class UserServiceTest {
     @Autowired private UserService userService;
     @Autowired private UserDao userDao;
     @Autowired private PlatformTransactionManager transactionManager;
+    @Autowired private MailSender mailSender;
     private List<User> users;
 
     @Before
@@ -90,8 +92,9 @@ public class UserServiceTest {
     @Test
     public void upgradeAllOrNothing() throws SQLException {
         UserService testUserService = new TestUserService(users.get(3).getId());
-        testUserService.setUserDao(this.userDao);
+        testUserService.setUserDao(userDao);
         testUserService.setTransactionManager(transactionManager);
+        testUserService.setMailSender(mailSender);
         testUserService.setUserLevelUpgradePolicy(new CommonLevelUpgradePolicy());
 
         for (User user : users) {
