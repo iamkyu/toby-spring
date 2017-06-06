@@ -2,6 +2,7 @@ package springbook.user.dao;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import springbook.user.domain.Level;
 import springbook.user.domain.User;
 
 import javax.sql.DataSource;
@@ -19,6 +20,10 @@ public class UserDaoJdbc implements UserDao {
         user.setId(rs.getString("id"));
         user.setName(rs.getString("name"));
         user.setPassword(rs.getString("password"));
+        user.setEmail(rs.getString("email"));
+        user.setLevel(Level.valueOf(rs.getInt("level")));
+        user.setLogin(rs.getInt("login"));
+        user.setRecommend(rs.getInt("recommend"));
         return user;
     };
 
@@ -28,10 +33,14 @@ public class UserDaoJdbc implements UserDao {
 
     @Override
     public void add(User user) {
-        this.jdbcTemplate.update("INSERT INTO USERS(id, name, password) VALUES(?,?,?)",
+        this.jdbcTemplate.update("INSERT INTO USERS(id, name, password, email, level, login, recommend) VALUES(?,?,?,?,?,?,?)",
                 user.getId(),
                 user.getName(),
-                user.getPassword());
+                user.getPassword(),
+                user.getEmail(),
+                user.getLevel().intValue(),
+                user.getLogin(),
+                user.getRecommend());
     }
 
     @Override
@@ -51,8 +60,19 @@ public class UserDaoJdbc implements UserDao {
 
     @Override
     public List<User> getAll() {
-
         return this.jdbcTemplate.query("SELECT * FROM USERS", this.userRowMapper);
+    }
+
+    @Override
+    public void update(User user) {
+        this.jdbcTemplate.update("UPDATE USERS SET name = ?, password = ?, email = ?, level = ?, login = ?, recommend= ? WHERE id = ?",
+                user.getName(),
+                user.getPassword(),
+                user.getEmail(),
+                user.getLevel().intValue(),
+                user.getLogin(),
+                user.getRecommend(),
+                user.getId());
     }
 }
 
