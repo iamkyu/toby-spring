@@ -6,12 +6,12 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.PlatformTransactionManager;
 import springbook.user.dao.UserDao;
 import springbook.user.domain.CommonLevelUpgradePolicy;
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
 
-import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
@@ -29,9 +29,9 @@ import static springbook.user.service.UserService.MIN_RECOMMEND_FOR_GOLD;
 @ContextConfiguration(locations = "classpath:applicationContext.xml")
 public class UserServiceTest {
 
-    @Autowired DataSource dataSource;
-    @Autowired UserService userService;
-    @Autowired UserDao userDao;
+    @Autowired private UserService userService;
+    @Autowired private UserDao userDao;
+    @Autowired private PlatformTransactionManager transactionManager;
     private List<User> users;
 
     @Before
@@ -90,8 +90,8 @@ public class UserServiceTest {
     @Test
     public void upgradeAllOrNothing() throws SQLException {
         UserService testUserService = new TestUserService(users.get(3).getId());
-        testUserService.setDataSource(this.dataSource);
         testUserService.setUserDao(this.userDao);
+        testUserService.setTransactionManager(transactionManager);
         testUserService.setUserLevelUpgradePolicy(new CommonLevelUpgradePolicy());
 
         for (User user : users) {
