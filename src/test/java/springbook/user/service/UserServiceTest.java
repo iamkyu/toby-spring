@@ -17,6 +17,7 @@ import springbook.user.domain.CommonLevelUpgradePolicy;
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
 
+import java.lang.reflect.Proxy;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -142,18 +143,23 @@ public class UserServiceTest {
 
     @Test
     public void upgradeAllOrNothing() {
+        for (User user : users) {
+            userDao.add(user);
+        }
+
         TestUserService testUserService = new TestUserService(users.get(3).getId());
         testUserService.setUserDao(userDao);
         testUserService.setMailSender(mailSender);
         testUserService.setUserLevelUpgradePolicy(new CommonLevelUpgradePolicy());
 
-        UserServiceTx txUserService = new UserServiceTx();
-        txUserService.setTransactionManager(transactionManager);
-        txUserService.setUserService(testUserService);
+        TransactionHandler txHandler = new TransactionHandler();
+        txHandler.setTarget(testUserService);
+        txHandler.setTransactionManager(transactionManager);
+        txHandler.setPattern("upgradeLevels");
 
-        for (User user : users) {
-            userDao.add(user);
-        }
+        UserService txUserService = (UserService) Proxy.newProxyInstance(
+                getClass().getClassLoader(), new Class[] { UserService.class }, txHandler
+        );
 
         try {
             txUserService.upgradeLevels();
