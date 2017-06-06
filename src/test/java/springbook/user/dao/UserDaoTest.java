@@ -37,9 +37,9 @@ public class UserDaoTest {
     public void setUp() throws SQLException {
         dao.deleteAll();
 
-        user1 = new User("iamkyu1", "kyukyu", "password", Level.BASIC, 1, 0);
-        user2 = new User("iamkyu2", "kyukyu", "password", Level.SILVER, 55, 10);
-        user3 = new User("iamkyu3", "kyukyu", "password", Level.GOLD, 100, 40);
+        user1 = new User("iamkyu1", "kyukyu", "password", "iamkyu1@mail.net", Level.BASIC, 1, 0);
+        user2 = new User("iamkyu2", "kyukyu", "password", "iamkyu2@mail.net", Level.SILVER, 55, 10);
+        user3 = new User("iamkyu3", "kyukyu", "password", "iamkyu3@mail.net", Level.GOLD, 100, 40);
     }
 
     @Test
@@ -88,6 +88,7 @@ public class UserDaoTest {
         assertEquals(user1.getId(), user2.getId());
         assertEquals(user1.getName(), user2.getName());
         assertEquals(user1.getPassword(), user2.getPassword());
+        assertEquals(user1.getEmail(), user2.getEmail());
         assertEquals(user1.getLevel(), user2.getLevel());
         assertEquals(user1.getRecommend(), user2.getRecommend());
         assertEquals(user1.getLogin(), user2.getLogin());
