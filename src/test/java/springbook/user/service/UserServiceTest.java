@@ -23,8 +23,8 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
-import static springbook.user.service.UserService.MIN_LOGCOUNT_FOR_SILVER;
-import static springbook.user.service.UserService.MIN_RECOMMEND_FOR_GOLD;
+import static springbook.user.service.UserServiceImpl.MIN_LOGCOUNT_FOR_SILVER;
+import static springbook.user.service.UserServiceImpl.MIN_RECOMMEND_FOR_GOLD;
 
 /**
  * @author Kj Nam
@@ -35,6 +35,7 @@ import static springbook.user.service.UserService.MIN_RECOMMEND_FOR_GOLD;
 public class UserServiceTest {
 
     @Autowired private UserService userService;
+    @Autowired private UserServiceImpl userServiceImpl;
     @Autowired private UserDao userDao;
     @Autowired private MailSender mailSender;
     @Autowired private PlatformTransactionManager transactionManager;
@@ -77,7 +78,7 @@ public class UserServiceTest {
         }
 
         MockMailSender mockMailSender = new MockMailSender();
-        userService.setMailSender(mockMailSender);
+        userServiceImpl.setMailSender(mockMailSender);
 
         userService.upgradeLevels();
 
@@ -104,19 +105,22 @@ public class UserServiceTest {
     }
 
     @Test
-    public void upgradeAllOrNothing() throws SQLException {
-        UserService testUserService = new TestUserService(users.get(3).getId());
+    public void upgradeAllOrNothing() {
+        TestUserService testUserService = new TestUserService(users.get(3).getId());
         testUserService.setUserDao(userDao);
-        testUserService.setTransactionManager(transactionManager);
         testUserService.setMailSender(mailSender);
         testUserService.setUserLevelUpgradePolicy(new CommonLevelUpgradePolicy());
+
+        UserServiceTx txUserService = new UserServiceTx();
+        txUserService.setTransactionManager(transactionManager);
+        txUserService.setUserService(testUserService);
 
         for (User user : users) {
             userDao.add(user);
         }
 
         try {
-            testUserService.upgradeLevels();
+            txUserService.upgradeLevels();
             fail("TestUserServiceException expected");
         } catch (TestUserServiceException e) {
             e.printStackTrace();
@@ -127,7 +131,7 @@ public class UserServiceTest {
     }
 
 
-    static class TestUserService extends UserService {
+    static class TestUserService extends UserServiceImpl {
         private String id;
 
         private TestUserService(String id) {
