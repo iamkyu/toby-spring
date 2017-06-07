@@ -5,6 +5,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
@@ -17,7 +18,6 @@ import springbook.user.domain.CommonLevelUpgradePolicy;
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
 
-import java.lang.reflect.Proxy;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,6 +40,8 @@ import static springbook.user.service.UserServiceImpl.MIN_RECOMMEND_FOR_GOLD;
 @RunWith(SpringRunner.class)
 @ContextConfiguration(locations = "classpath:applicationContext.xml")
 public class UserServiceTest {
+
+    @Autowired ApplicationContext context;
 
     @Autowired private UserService userService;
     @Autowired private UserDao userDao;
@@ -142,7 +144,8 @@ public class UserServiceTest {
     }
 
     @Test
-    public void upgradeAllOrNothing() {
+    @DirtiesContext
+    public void upgradeAllOrNothing() throws Exception {
         for (User user : users) {
             userDao.add(user);
         }
@@ -152,14 +155,10 @@ public class UserServiceTest {
         testUserService.setMailSender(mailSender);
         testUserService.setUserLevelUpgradePolicy(new CommonLevelUpgradePolicy());
 
-        TransactionHandler txHandler = new TransactionHandler();
-        txHandler.setTarget(testUserService);
-        txHandler.setTransactionManager(transactionManager);
-        txHandler.setPattern("upgradeLevels");
-
-        UserService txUserService = (UserService) Proxy.newProxyInstance(
-                getClass().getClassLoader(), new Class[] { UserService.class }, txHandler
-        );
+        TxProxyFactoryBean txProxyFactoryBean =
+                context.getBean("&userService", TxProxyFactoryBean.class);
+        txProxyFactoryBean.setTarget(testUserService);
+        UserService txUserService = (UserService) txProxyFactoryBean.getObject();
 
         try {
             txUserService.upgradeLevels();
