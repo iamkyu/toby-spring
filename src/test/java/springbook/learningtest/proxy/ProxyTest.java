@@ -2,6 +2,8 @@ package springbook.learningtest.proxy;
 
 import org.aopalliance.intercept.MethodInvocation;
 import org.junit.Test;
+import org.springframework.aop.ClassFilter;
+import org.springframework.aop.Pointcut;
 import org.springframework.aop.framework.ProxyFactoryBean;
 import org.springframework.aop.support.DefaultPointcutAdvisor;
 import org.springframework.aop.support.NameMatchMethodPointcut;
@@ -61,6 +63,41 @@ public class ProxyTest {
         assertThat(proxiedHello.sayThankYou("Kyu"), is("Thank You Kyu"));
     }
 
+    @Test
+    public void classNamePointcutAdvisor() {
+        NameMatchMethodPointcut classMethodPointcut = new NameMatchMethodPointcut() {
+            @Override
+            public ClassFilter getClassFilter() {
+                return aClass -> aClass.getSimpleName().startsWith("HelloT");
+            }
+        };
+
+        classMethodPointcut.setMappedName("sayH*");
+        checkAdvice(new HelloTarget(), classMethodPointcut, true);
+
+        class HelloWorld extends HelloTarget {}
+        checkAdvice(new HelloWorld(), classMethodPointcut, false);
+
+        class HelloT extends HelloTarget {}
+        checkAdvice(new HelloT(), classMethodPointcut, true);
+    }
+
+    private void checkAdvice(Object target, Pointcut pointcut, boolean adviced) {
+        ProxyFactoryBean pfBean = new ProxyFactoryBean();
+        pfBean.setTarget(target);
+        pfBean.addAdvisor(new DefaultPointcutAdvisor(pointcut, new UppercaseAdvice()));
+        Hello proxiedHello = (Hello) pfBean.getObject();
+
+        if (adviced) {
+            assertThat(proxiedHello.sayHello("Kyu"), is("HELLO KYU"));
+            assertThat(proxiedHello.sayHi("Kyu"), is("HI KYU"));
+            assertThat(proxiedHello.sayThankYou("Kyu"), is("Thank You Kyu"));
+        } else {
+            assertThat(proxiedHello.sayHello("Kyu"), is("Hello Kyu"));
+            assertThat(proxiedHello.sayHi("Kyu"), is("Hi Kyu"));
+            assertThat(proxiedHello.sayThankYou("Kyu"), is("Thank You Kyu"));
+        }
+    }
 
     static class UppercaseAdvice implements org.aopalliance.intercept.MethodInterceptor {
         @Override
