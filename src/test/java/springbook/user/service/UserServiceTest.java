@@ -1,17 +1,22 @@
 package springbook.user.service;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.dao.TransientDataAccessResourceException;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 import springbook.user.dao.UserDao;
 import springbook.user.domain.CommonLevelUpgradePolicy;
 import springbook.user.domain.Level;
@@ -42,6 +47,7 @@ import static springbook.user.service.UserServiceImpl.MIN_RECOMMEND_FOR_GOLD;
 public class UserServiceTest {
 
     @Autowired ApplicationContext context;
+    @Autowired PlatformTransactionManager transactionManager;
 
     @Autowired private UserService userService;
     @Autowired private UserService testUserService;
@@ -166,7 +172,29 @@ public class UserServiceTest {
         assertThat(testUserService, instanceOf(java.lang.reflect.Proxy.class));
     }
 
-    static class TestUserServiceImpl extends UserServiceImpl {
+    @Ignore(value = "H2 데이터베이스 JDBC 드라이버에서는 readOnly 힌트가 지원되지 않는다.")
+    @Test(expected = TransientDataAccessResourceException.class)
+    public void readOnlyTransactionAttribute() {
+        this.testUserService.getAll();
+    }
+
+    @Test
+    public void transactionSync() {
+        assertThat(userDao.getCount(), is(0));
+
+        DefaultTransactionDefinition definition = new DefaultTransactionDefinition();
+        TransactionStatus status = transactionManager.getTransaction(definition);
+
+        userService.add(users.get(0));
+        userService.add(users.get(1));
+        assertThat(userDao.getCount(), is(2));
+
+        transactionManager.rollback(status);
+
+        assertThat(userDao.getCount(), is(0));
+    }
+
+    static class TestUserService extends UserServiceImpl {
         private String id = "miller";
 
         @Override
@@ -175,6 +203,15 @@ public class UserServiceTest {
                 throw new TestUserServiceException();
             }
             super.upgradeLevel(user);
+        }
+
+        @Override
+        public List<User> getAll() {
+            for (User user : super.getAll()) {
+                // 트랜잭션 테스트를 위해 read-only 가 적용된 메소드 안에서 update 시도
+                super.update(user);
+            }
+            return null;
         }
     }
 
