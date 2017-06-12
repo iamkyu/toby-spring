@@ -1,5 +1,7 @@
 package springbook.user.dao;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import springbook.user.domain.Level;
@@ -13,6 +15,8 @@ import java.util.List;
  * @since 2017-05-11
  */
 public class UserDaoJdbc implements UserDao {
+    private static final Logger logger = LoggerFactory.getLogger(UserDaoJdbc.class);
+
     private JdbcTemplate jdbcTemplate;
 
     private RowMapper<User> userRowMapper = (rs, rowNum) -> {
@@ -33,6 +37,7 @@ public class UserDaoJdbc implements UserDao {
 
     @Override
     public void add(User user) {
+        logger.debug("Add User: {}", user);
         this.jdbcTemplate.update("INSERT INTO USERS(id, name, password, email, level, login, recommend) VALUES(?,?,?,?,?,?,?)",
                 user.getId(),
                 user.getName(),
@@ -55,7 +60,7 @@ public class UserDaoJdbc implements UserDao {
 
     @Override
     public void deleteAll() {
-        this.jdbcTemplate.update("DELETE FROM users");
+        this.jdbcTemplate.update("DELETE FROM USERS");
     }
 
     @Override
@@ -65,6 +70,7 @@ public class UserDaoJdbc implements UserDao {
 
     @Override
     public void update(User user) {
+        logger.debug("Update user: {}", user);
         this.jdbcTemplate.update("UPDATE USERS SET name = ?, password = ?, email = ?, level = ?, login = ?, recommend= ? WHERE id = ?",
                 user.getName(),
                 user.getPassword(),
