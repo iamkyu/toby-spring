@@ -1,4 +1,4 @@
-package springbook.user.sqlservice;
+package springbook.user.exception;
 
 /**
  * @author Kj Nam

@@ -1,5 +1,7 @@
 package springbook.user.sqlservice;
 
+import springbook.user.exception.SqlRetrievalFailureException;
+
 /**
  * @author Kj Nam
  * @since 2017-06-13
