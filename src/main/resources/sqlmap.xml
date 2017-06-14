@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sqlmap xmlns="http://iamkyu.io/sqlmap"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://iamkyu.io/sqlmap/sqlmap.xsd">
+
+       <sql key="userAdd">INSERT INTO USERS(id, name, password, email, level, login, recommend) VALUES(?,?,?,?,?,?,?)</sql>
+       <sql key="userGet">SELECT * FROM USERS WHERE id = ?</sql>
+       <sql key="userGetAll">SELECT * FROM USERS</sql>
+       <sql key="userDeleteAll">DELETE FROM USERS</sql>
+       <sql key="userGetCount">SELECT count(*) FROM USERS</sql>
+       <sql key="userUpdate">UPDATE USERS SET name = ?, password = ?, email = ?, level = ?, login = ?, recommend= ? WHERE id = ?</sql>
+</sqlmap>
