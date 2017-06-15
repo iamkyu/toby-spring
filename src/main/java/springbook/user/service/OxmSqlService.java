@@ -1,6 +1,9 @@
 package springbook.user.service;
 
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.oxm.Unmarshaller;
+import springbook.user.dao.UserDao;
 import springbook.user.exception.SqlRetrievalFailureException;
 import springbook.user.sqlservice.BaseSqlService;
 import springbook.user.sqlservice.HashMapSqlRegistry;
@@ -33,8 +36,8 @@ public class OxmSqlService implements SqlService {
         this.oxmSqlReader.unmarshaller = unmarshaller;
     }
 
-    public void setSqlMapFile(String sqlMapFile) {
-        this.oxmSqlReader.sqlMapFile = sqlMapFile;
+    public void setSqlMapFile(Resource sqlMapFile) {
+        this.oxmSqlReader.setSqlMapFile(sqlMapFile);
     }
 
     @PostConstruct
@@ -52,21 +55,20 @@ public class OxmSqlService implements SqlService {
 
     private class OxmSqlReader implements SqlReader {
         private Unmarshaller unmarshaller;
-        private final static String DEFAULT_SQLMAP_FILE = "sqlmap.xml";
-        private String sqlMapFile = DEFAULT_SQLMAP_FILE;
+        private Resource sqlMapFile = new ClassPathResource("sqlmap.xml", UserDao.class);
 
         public void setUnmarshaller(Unmarshaller unmarshaller) {
             this.unmarshaller = unmarshaller;
         }
 
-        public void setSqlMapFile(String sqlMapFile) {
+        public void setSqlMapFile(Resource sqlMapFile) {
             this.sqlMapFile = sqlMapFile;
         }
 
         @Override
         public void read(SqlRegistry sqlRegistry) {
             try {
-                Source source = new StreamSource(this.getClass().getClassLoader().getResourceAsStream(sqlMapFile));
+                Source source = new StreamSource(sqlMapFile.getInputStream());
                 Sqlmap sqlmap = (Sqlmap) this.unmarshaller.unmarshal(source);
 
                 for (SqlType sql : sqlmap.getSql()) {
