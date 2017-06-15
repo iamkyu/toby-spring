@@ -1,8 +1,8 @@
 package springbook.user.service;
 
 import org.springframework.oxm.Unmarshaller;
-import springbook.user.exception.SqlNotFountException;
 import springbook.user.exception.SqlRetrievalFailureException;
+import springbook.user.sqlservice.BaseSqlService;
 import springbook.user.sqlservice.HashMapSqlRegistry;
 import springbook.user.sqlservice.SqlReader;
 import springbook.user.sqlservice.SqlRegistry;
@@ -20,6 +20,8 @@ import java.io.IOException;
  * @since 2017-06-15
  */
 public class OxmSqlService implements SqlService {
+    private final BaseSqlService baseSqlService = new BaseSqlService();
+
     private final OxmSqlReader oxmSqlReader = new OxmSqlReader();
 
     private SqlRegistry sqlRegistry = new HashMapSqlRegistry();
@@ -38,16 +40,14 @@ public class OxmSqlService implements SqlService {
 
     @PostConstruct
     public void loadSql() {
-        oxmSqlReader.read(sqlRegistry);
+        baseSqlService.setSqlReader(oxmSqlReader);
+        baseSqlService.setSqlRegistry(sqlRegistry);
+        baseSqlService.loadSql();
     }
 
     @Override
     public String getSql(String key) throws SqlRetrievalFailureException {
-        try {
-            return sqlRegistry.findSql(key);
-        } catch (SqlNotFountException e) {
-            throw new SqlRetrievalFailureException(e);
-        }
+        return baseSqlService.getSql(key);
     }
 
 
