@@ -21,7 +21,6 @@ import java.io.IOException;
  */
 public class OxmSqlService implements SqlService {
     private final BaseSqlService baseSqlService = new BaseSqlService();
-
     private final OxmSqlReader oxmSqlReader = new OxmSqlReader();
 
     private SqlRegistry sqlRegistry = new HashMapSqlRegistry();
