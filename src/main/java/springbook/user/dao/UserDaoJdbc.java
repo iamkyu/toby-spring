@@ -2,8 +2,10 @@ package springbook.user.dao;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
 import springbook.user.sqlservice.SqlService;
@@ -15,11 +17,13 @@ import java.util.List;
  * @author Kj Nam
  * @since 2017-05-11
  */
+@Repository
 public class UserDaoJdbc implements UserDao {
     private static final Logger logger = LoggerFactory.getLogger(UserDaoJdbc.class);
 
     private JdbcTemplate jdbcTemplate;
-    private SqlService sqlService;
+
+    @Autowired private SqlService sqlService;
 
     private RowMapper<User> userRowMapper = (rs, rowNum) -> {
         User user = new User();
@@ -33,12 +37,9 @@ public class UserDaoJdbc implements UserDao {
         return user;
     };
 
+    @Autowired
     public void setDataSource(DataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
-    }
-
-    public void setSqlService(SqlService sqlService) {
-        this.sqlService = sqlService;
     }
 
     @Override
