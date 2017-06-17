@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
-import org.springframework.mail.MailSender;
 import org.springframework.oxm.Unmarshaller;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -15,10 +14,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import springbook.user.dao.UserDao;
 import springbook.user.domain.CommonLevelUpgradePolicy;
 import springbook.user.domain.UserLevelUpgradePolicy;
-import springbook.user.service.DummyMailSender;
 import springbook.user.service.OxmSqlService;
-import springbook.user.service.UserService;
-import springbook.user.service.UserServiceTest.TestUserService;
 import springbook.user.sqlservice.SqlRegistry;
 import springbook.user.sqlservice.SqlService;
 import springbook.user.sqlservice.updatable.EmbeddedDbSqlRegistry;
@@ -34,7 +30,7 @@ import static org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType.
 @Configuration
 @EnableTransactionManagement
 @ComponentScan(basePackages = "springbook.user")
-public class TestApplicationContext {
+public class AppContext {
 
     @Autowired UserDao userDao;
 
@@ -54,22 +50,8 @@ public class TestApplicationContext {
     }
 
     @Bean
-    public UserService testUserService() {
-        TestUserService testService = new TestUserService();
-        testService.setUserDao(userDao);
-        testService.setMailSender(mailSender());
-        testService.setUserLevelUpgradePolicy(userLevelUpgradePolicy());
-        return testService;
-    }
-
-    @Bean
     public UserLevelUpgradePolicy userLevelUpgradePolicy() {
         return new CommonLevelUpgradePolicy();
-    }
-
-    @Bean
-    public MailSender mailSender() {
-        return new DummyMailSender();
     }
 
     @Bean

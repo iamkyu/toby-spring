@@ -17,7 +17,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
-import springbook.config.TestApplicationContext;
+import springbook.config.AppContext;
+import springbook.config.TestAppContext;
 import springbook.user.dao.UserDao;
 import springbook.user.domain.CommonLevelUpgradePolicy;
 import springbook.user.domain.Level;
@@ -44,7 +45,7 @@ import static springbook.user.service.UserServiceImpl.MIN_RECOMMEND_FOR_GOLD;
  * @since 2017-06-01
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = TestApplicationContext.class)
+@ContextConfiguration(classes = {TestAppContext.class, AppContext.class})
 public class UserServiceTest {
 
     @Autowired ApplicationContext context;
