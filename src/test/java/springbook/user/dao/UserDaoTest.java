@@ -10,6 +10,7 @@ import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
 import org.springframework.jdbc.support.SQLExceptionTranslator;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import springbook.config.TestApplicationContext;
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
 
@@ -25,7 +26,7 @@ import static org.junit.Assert.*;
  * @since 2017-05-11
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(locations = "classpath:applicationContext.xml")
+@ContextConfiguration(classes = TestApplicationContext.class)
 public class UserDaoTest {
     @Autowired private UserDao dao;
     @Autowired private DataSource dataSource;
