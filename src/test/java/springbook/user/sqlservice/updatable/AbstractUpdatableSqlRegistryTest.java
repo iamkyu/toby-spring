@@ -1,4 +1,4 @@
-package springbook.user.service;
+package springbook.user.sqlservice.updatable;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -8,7 +8,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import springbook.user.exception.SqlNotFountException;
 import springbook.user.exception.SqlUpdateFailureException;
 import springbook.user.sqlservice.UpdatableSqlRegistry;
-import springbook.user.sqlservice.updatable.ConcurrentHashMapSqlRegistry;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,28 +17,29 @@ import static org.junit.Assert.*;
 
 /**
  * @author Kj Nam
- * @since 2017-06-16
+ * @since 2017-06-17
  */
 @RunWith(SpringRunner.class)
 @ContextConfiguration(locations = "classpath:applicationContext.xml")
-public class ConcurrentHashMapSqlRegistryTest {
+public abstract class AbstractUpdatableSqlRegistryTest {
     UpdatableSqlRegistry sqlRegistry;
 
     @Before
     public void setUp() {
-        sqlRegistry = new ConcurrentHashMapSqlRegistry();
+        sqlRegistry = createUpdatableSqlRegistry();
         sqlRegistry.registerSql("KEY1", "SQL1");
         sqlRegistry.registerSql("KEY2", "SQL2");
         sqlRegistry.registerSql("KEY3", "SQL3");
     }
 
+    abstract protected UpdatableSqlRegistry createUpdatableSqlRegistry();
 
     @Test
     public void find() {
         checkFindResult("SQL1", "SQL2", "SQL3");
     }
 
-    private void checkFindResult(String expected1, String expected2, String expected3) {
+    protected void checkFindResult(String expected1, String expected2, String expected3) {
         assertThat(sqlRegistry.findSql("KEY1"), is(expected1));
         assertThat(sqlRegistry.findSql("KEY2"), is(expected2));
         assertThat(sqlRegistry.findSql("KEY3"), is(expected3));
