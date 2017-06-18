@@ -3,11 +3,9 @@ package springbook.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.oxm.Unmarshaller;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
-import org.springframework.transaction.PlatformTransactionManager;
 import springbook.user.service.OxmSqlService;
 import springbook.user.sqlservice.SqlRegistry;
 import springbook.user.sqlservice.SqlService;
@@ -53,12 +51,5 @@ public class SqlServiceContext {
                 .setType(H2)
                 .addScript("classpath:/ddl-for-mysql.sql")
                 .build();
-    }
-
-    @Bean
-    public PlatformTransactionManager transactionManager() {
-        DataSourceTransactionManager tm = new DataSourceTransactionManager();
-        tm.setDataSource(dataSource());
-        return tm;
     }
 }

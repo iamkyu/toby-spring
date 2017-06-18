@@ -12,17 +12,18 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import springbook.config.AppContext;
-import springbook.config.TestAppContext;
 import springbook.user.dao.UserDao;
 import springbook.user.domain.CommonLevelUpgradePolicy;
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
+import springbook.user.exception.TestUserServiceException;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -45,7 +46,8 @@ import static springbook.user.service.UserServiceImpl.MIN_RECOMMEND_FOR_GOLD;
  * @since 2017-06-01
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = {TestAppContext.class, AppContext.class})
+@ActiveProfiles("test")
+@ContextConfiguration(classes = AppContext.class)
 public class UserServiceTest {
 
     @Autowired ApplicationContext context;
@@ -194,30 +196,6 @@ public class UserServiceTest {
         transactionManager.rollback(status);
 
         assertThat(userDao.getCount(), is(0));
-    }
-
-    public static class TestUserService extends UserServiceImpl {
-        private String id = "miller";
-
-        @Override
-        protected void upgradeLevel(User user) {
-            if (user.getId().equals(this.id)) {
-                throw new TestUserServiceException();
-            }
-            super.upgradeLevel(user);
-        }
-
-        @Override
-        public List<User> getAll() {
-            for (User user : super.getAll()) {
-                // 트랜잭션 테스트를 위해 read-only 가 적용된 메소드 안에서 update 시도
-                super.update(user);
-            }
-            return null;
-        }
-    }
-
-    static class TestUserServiceException extends RuntimeException {
     }
 
     static class MockMailSender implements MailSender {

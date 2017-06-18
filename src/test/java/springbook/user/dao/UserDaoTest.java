@@ -8,10 +8,10 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
 import org.springframework.jdbc.support.SQLExceptionTranslator;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import springbook.config.AppContext;
-import springbook.config.TestAppContext;
 import springbook.user.domain.Level;
 import springbook.user.domain.User;
 
@@ -27,7 +27,8 @@ import static org.junit.Assert.*;
  * @since 2017-05-11
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = {TestAppContext.class, AppContext.class})
+@ActiveProfiles("test")
+@ContextConfiguration(classes = AppContext.class)
 public class UserDaoTest {
     @Autowired private UserDao dao;
     @Autowired private DataSource dataSource;
