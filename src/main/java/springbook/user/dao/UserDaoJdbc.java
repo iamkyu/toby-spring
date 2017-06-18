@@ -69,7 +69,7 @@ public class UserDaoJdbc implements UserDao {
 
     @Override
     public void deleteAll() {
-        this.jdbcTemplate.update(this.sqlService.getSql("userDeleteAll"));
+         this.jdbcTemplate.update(this.sqlService.getSql("userDeleteAll"));
     }
 
     @Override
